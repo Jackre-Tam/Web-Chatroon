@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<script src="http://localhost:8080/socket.io/socket.io.js" type="text/javascript"></script>
+	<style type="text/css">
+
+		.mine{
+			background-color: #E0F8F7;
+		}
+		.main_1{
+			display:inline-block;
+			width: 500px;
+			float: left;
+		}
+		.main_2{
+			display:inline-block;
+			width: 150px;
+			background: #F6CED8;
+			float: left;
+		}
+		.ul2 li{
+			width: 140px;
+			height: 30px;
+
+		}
+	</style>
+	<script type="text/javascript">
+		let sock = io.connect('ws://localhost:8080/');
+
+		window.onload = function(){
+            
+            console.log('打开了');
+            let cur_username='';
+			let obtn1 = document.getElementById('btn1');
+			let obtn2 = document.getElementById('btn2');
+			let ouser = document.getElementById('usertxt');
+			let opass = document.getElementById('passtxt');
+			let otxt = document.getElementById('txt1');
+			let osendBtn =document.getElementById('sendbtn');
+			let oul1 = document.getElementById('ul1');
+			let oul2 = document.getElementById('ul2');
+			let olog_inf =document.getElementById('log_online_span');
+			let odiv_2 = document.getElementById('main_2');
+
+			//注册的提交和接收
+			sock.on('reg_ret',(code,msg)=>{
+				if(code){
+					alert(`注册失败，`+msg);
+				}else{
+					alert('注册成功');
+				}
+			});
+			obtn1.onclick = function(){
+				console.log('注册点击了');
+				sock.emit('reg',ouser.value, opass.value);
+			};
+
+			//登录的提交和接收
+			sock.on('login_ret',(code,msg)=>{
+				if(code){
+					alert('登录失败，'+msg);
+				}else{
+					alert('登录成功');
+					cur_username=ouser.value;
+				}
+			});
+			obtn2.onclick = function(){
+				console.log('登录点击了');
+				sock.emit('login',ouser.value, opass.value);
+			};
+
+			//消息的接收
+			sock.on('msg_ret',(code,msg_ret)=>{   //接收自己的消息是否发送成功的信息
+				if(code){							
+					alert(msg_ret);
+				}else{							//如没错则将消息显示
+					// alert('发送成功');
+					let oLi=document.createElement('li');
+					oLi.className='mine';
+
+					oLi.innerHTML=`<h3>${cur_username}（自己）</h3><p>${otxt.value}</p>`;
+					oul1.appendChild(oLi);
+					otxt.value='';  //清空文本框
+				} 
+			});
+			sock.on('msg',(name,txt)=>{         //接收别人发来的消息
+				let oLi=document.createElement('li');
+				//oLi.className='mine';
+
+
+				oLi.innerHTML=`<h3>${name}</h3><p>${txt}</p>`;
+				oul1.appendChild(oLi);
+			});
+
+			sock.on('login_inf',(name,code,length,User)=>{    //接收他人登录的消息
+				olog_inf.innerHTML=`${length}`;
+
+				// let oLi=document.createElement('li');
+				// 	oLi.setAttribute("id",`${name}`);
+				// 	oLi.innerHTML=`${name}`;
+				// let oLi_item=document.getElementById(`${name}`);	
+
+				// if(!code){
+				// 	oul2.appendChild(oLi);
+				// }else{
+				// 	oul2.removeChild(oLi_item);
+				// }
+
+
+			});
+			
+			sock.on('all_login_username',User=>{
+				let aUser = [];
+				aUser = User;
+				
+				ul2.innerHTML=`<li style="list-style: none;">在线用户▼</li>`;
+				aUser.forEach(item=>{
+					let oLi=document.createElement('li');
+					oLi.innerHTML=item;
+					ul2.appendChild(oLi);
+				});
+
+				odiv_2.appendChild(ul2);
+				
+				console.log(aUser);
+				// aUser.forEach(item=>{
+				// 	let usern = item;
+
+				// });
+			});
+
+			// sock.on('dislogin_inf',(name,length)=>{    //接收他人离线的消息
+			// 	olog_inf.innerHTML=`${length}`;
+			// 	let oLi_item=document.getElementById(`${name}`);
+			// 	console.log(oLi_item);
+			// 	
+				
+			// });
+
+
+
+
+			//点击发送按钮时发送自己的消息
+			osendBtn.onclick = function(){  
+				sock.emit('msg',otxt.value);
+				console.log('发送了');
+			};
+
+
+		};
+	</script>
+</head>
+<body>
+
+	<div class="main_1">
+		<h1>WEB聊天室（测试简版）</h1>
+		用户：<input type="text" name="" id="usertxt"> <br><br>
+		密码：<input type="password" id="passtxt"> <br><br>
+		<input type="button" value="注册" id="btn1" >
+		<input type="button" value="登录" id="btn2" > 
+		<span>当前在线人数：<span id="log_online_span">0</span></span> <br>
+		<textarea id="txt1" rows="8" cols="60"></textarea> <br>
+		<input type="button" id="sendbtn" value="发送" name=""> <br>
+		<ul id="ul1">
+			<!-- <li>
+				<h3>zhangsan</h3>
+				<p>fdasfasfasfsaffaf</p>
+			</li> -->
+		</ul>
+	</div>
+	<div class="main_2" id="main_2">
+		<ul class="ul2" id="ul2">
+			<li style="list-style: none;">在线用户▼</li>
+		</ul>
+	</div>
+
+</body>
+</html>

@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<script src="http://localhost:8080/socket.io/socket.io.js" type="text/javascript"></script>
+	<style type="text/css">
+		*{
+			margin: 0;
+	    	padding: 0;
+		}
+		.bigbox{
+
+			position:absolute; 
+			top:0; 
+			left:0; 
+			height:100%; 
+			width:100%; 
+			background-image:url(./images/bg4.jpg); 
+			background-position: center 0; 
+			background-repeat: no-repeat; 
+			background-attachment:fixed; 
+			background-size: cover; 
+			-webkit-background-size: cover;/* 兼容Webkit内核浏览器如Chrome和Safari */ 
+			-o-background-size: cover;/* 兼容Opera */ 
+			zoom: 1; 
+		}
+		.black{
+			height: 100%;
+			width: 100%;
+			background: rgba(0,0,0,0);
+		}
+		.header{	
+			height: 7%;
+			overflow: hidden;
+		}
+		.header_main{
+			height: 100%;
+			margin-top: -66px;
+			background-color:rgba(255,255,255,0.9);
+		}
+		.main{
+			height: 85%;
+			overflow: hidden;
+		}
+		.contain_left{
+			height: 100%;
+			float: left;
+			width: 15%;
+		}
+		.contain_left_nr{
+			width: 100%;
+			height: 100%;
+			margin-left: -288px;
+			background-color:rgba(255,255,255,0.6); 
+		}
+		.contain_right{
+			display: none;
+			height: 100%;
+			/*background-color:rgba(128,246,242,0.2); */
+			float: left;
+			width: 85%;
+		}
+		.dabiaoti{
+			height: 104px;
+			width: 100%;
+			text-align: center;
+		}
+		.dabiaoti img{
+			width: 420px;
+			height: 104px;
+		}
+		.table{
+			width: 410px;
+			height: 507px;
+			margin:0 56%;
+			margin-top: 62px;
+			text-align:center;
+			background-color:rgba(255,255,255,0.5);
+			box-shadow: 0px 5px 17px -4px rgba(0, 0, 0, .4);
+			
+		}
+		.bottom{
+			width: 100%;
+			height: 8%;
+			float: left;
+			overflow: hidden;
+		}
+		.bottom_nr{
+			width: 100%;
+			height: 100%;
+			margin-top:75px;
+			background: rgba(255,255,255,0.9);
+		}
+		#form{
+			width: 304px;
+			height: 424px;
+			margin:0 auto;
+			text-align: center;
+		}
+		#form input{
+		    width: 289px;
+  		    height: 36px;
+  		    float: left;
+  		    border: 1px solid #FFFFFF;
+  		    outline-style: none;
+  		    margin-top: 33px;
+  		    padding-left: 11px;
+  		    background: rgba(255,255,255,1);
+		}
+		#form #btn1{
+			width: 304px;
+            border: 1px solid #F7FE2E;
+            display: block;
+            width: 302px;
+            background: #F7FE2E;
+            height: 34px;
+            line-height: 31px;
+            color: #A4A4A4;
+            font-size: 20px;
+            margin-top: 22px;
+            cursor: pointer;
+		}
+		#form #btn1:hover{
+			background: #F3F781;
+		}
+		#form #btn2{
+			width: 304px;
+            border: 1px solid #F7FE2E;
+            display: block;
+            width: 302px;
+            background: #F7FE2E;
+            height: 34px;
+            line-height: 31px;
+            color: #A4A4A4;
+            font-size: 20px;
+            margin-top: 22px;
+            cursor: pointer;
+		}
+		#form #btn2:hover{
+			background: #F3F781;
+		}
+		.touxiang_a{
+			display: inline-block;
+            width: 291px;
+            height: 80px;
+            padding: 5px;
+            margin: 0 auto;
+            text-align: center;
+		}
+		.touxiang:hover{
+			width: 66px;
+            height: 66px;
+		}
+		.touxiang{
+			background-color: #FFFFFF;
+            width: 65px;
+            height: 65px;
+            /*margin: -10px 57.5px;*/
+            padding: 5px;
+            border-radius: 50%;
+            box-shadow: 0px 5px 17px -4px rgba(0, 0, 0, .4);
+		}
+		.form_h1{
+			width: 301px;
+			height: 80px;
+			text-align:center;
+		}
+		#txt1{
+			font-size: 20px;
+		}
+	</style>
+
+	<script type="text/javascript">
+		let sock = io.connect('ws://localhost:8080/');
+
+		window.onload = function(){
+            
+            console.log('打开了');
+            let cur_username='';
+			let obtn1 = document.getElementById('btn1');
+			let obtn2 = document.getElementById('btn2');
+			let ouser = document.getElementById('usertxt');
+			let opass = document.getElementById('passtxt');
+			// let otxt = document.getElementById('txt1');
+			// let osendBtn =document.getElementById('sendbtn');
+			// let oul1 = document.getElementById('ul1');
+			// let oul2 = document.getElementById('ul2');
+			// let olog_inf =document.getElementById('log_online_span');
+			// let odiv_2 = document.getElementById('main_2');
+			let obigbox = document.getElementById('bigbox');
+			let otable = document.getElementById('table');
+			let oheader_main =document.getElementById('header_main');
+			let ocontain_left_nr =document.getElementById('contain_left_nr');
+			let ocontain_right =document.getElementById('contain_right');
+			let obottom_nr =document.getElementById('bottom_nr');
+			let oblack =document.getElementById('black');
+			let odabiaoti =document.getElementById('dabiaoti');
+
+			//注册的提交和接收
+			sock.on('reg_ret',(code,msg)=>{
+				if(code){
+					alert(`注册失败，`+msg);
+				}else{
+					alert('注册成功');
+				}
+			});
+			obtn1.onclick = function(){
+				console.log('注册点击了');
+				sock.emit('reg',ouser.value, opass.value);
+			};
+
+			//登录的提交和接收
+			sock.on('login_ret',(code,msg)=>{
+				if(code){
+					alert('登录失败，'+msg);
+				}else{
+					// alert('登录成功');
+					cur_username=ouser.value;
+
+					otable.setAttribute("style","margin: -410px; transition: all 0.5s;");
+					odabiaoti.setAttribute("style","opacity: 0; transition: all 0.5s;");
+					oheader_main.setAttribute("style","margin-top:0px; transition: all 1s;");
+					ocontain_left_nr.setAttribute("style","margin-left: 0px; transition: all 1s;");
+					ocontain_right.setAttribute("style","display:block; transition: all 1s;");
+					obottom_nr.setAttribute("style","margin-top:0px; transition: all 1s;");
+					oblack.setAttribute("style","background: rgba(0,0,0,0);");
+					obigbox.setAttribute("style","background-image:url(./images/bg4.jpg);");
+				}
+			});
+			obtn2.onclick = function(){
+				console.log('登录点击了');
+				sock.emit('login',ouser.value, opass.value);
+			};
+
+			// //消息的接收
+			// sock.on('msg_ret',(code,msg_ret)=>{   //接收自己的消息是否发送成功的信息
+			// 	if(code){							
+			// 		alert(msg_ret);
+			// 	}else{							//如没错则将消息显示
+			// 		// alert('发送成功');
+			// 		let oLi=document.createElement('li');
+			// 		oLi.className='mine';
+
+			// 		oLi.innerHTML=`<h3>${cur_username}（自己）</h3><p>${otxt.value}</p>`;
+			// 		oul1.appendChild(oLi);
+			// 		otxt.value='';  //清空文本框
+			// 	} 
+			// });
+			// sock.on('msg',(name,txt)=>{         //接收别人发来的消息
+			// 	let oLi=document.createElement('li');
+			// 	//oLi.className='mine';
+
+
+			// 	oLi.innerHTML=`<h3>${name}</h3><p>${txt}</p>`;
+			// 	oul1.appendChild(oLi);
+			// });
+
+			// sock.on('login_inf',(name,code,length,User)=>{    //接收他人登录的消息
+			// 	olog_inf.innerHTML=`${length}`;
+
+			// });
+			
+			// sock.on('all_login_username',User=>{
+			// 	let aUser = [];
+			// 	aUser = User;
+				
+			// 	ul2.innerHTML=`<li style="list-style: none;">在线用户▼</li>`;
+			// 	aUser.forEach(item=>{
+			// 		let oLi=document.createElement('li');
+			// 		oLi.innerHTML=item;
+			// 		ul2.appendChild(oLi);
+			// 	});
+
+			// 	odiv_2.appendChild(ul2);
+				
+			// 	console.log(aUser);
+			// });
+
+			// //点击发送按钮时发送自己的消息
+			// osendBtn.onclick = function(){  
+			// 	sock.emit('msg',otxt.value);
+			// 	console.log('发送了');
+			// };
+
+
+		};
+	</script>
+</head>
+<body>
+    <div class="bigbox" id="bigbox"> <!-- 最大的盒子放底部，背景 -->
+		<div class="black" id="black">
+			<div class="header" id="header">
+				<div class="header_main" id="header_main">
+					
+				</div>			
+			</div>
+			<div class="main">
+				<div class="contain_left" id="contain_left">
+					<div class="contain_left_nr" id="contain_left_nr">
+						
+					</div>
+				</div>
+				<div class="contain_right" id="contain_right">
+					
+				</div>
+				<div class="dabiaoti" id="dabiaoti">
+					<img src="./images/logo.png">
+				</div>
+				<div class="table" id="table">
+					<div id="form">
+                		<!-- <form action=""> -->
+                			<div class="form_h1">
+                				<h2 style="color: #FFFFFF; height: 80px;line-height: 80px;">—— &nbsp;登录&nbsp; ——</h2>
+                			</div>
+                			<a class="touxiang_a" href="#" >
+                				<img class="touxiang" id="touxiang" src="./images/user/user12.jpg">
+                			</a>
+                			
+                			<input id="usertxt" placeholder="用户名 6~12位字符" type="text">
+                			<input id="passtxt" placeholder="密码" type="password">
+                			
+                			<input id="btn2" value="登&nbsp;&nbsp;&nbsp;&nbsp;录" type="button">
+                			<input id="btn1" value="注&nbsp;&nbsp;&nbsp;&nbsp;册" type="button">
+								
+                			
+                		<!-- </form> -->
+                	</div>
+                	<p style="color: #FFFFFF; margin-top: 30px;">什么？还没注册，先注册再登录吧！</p>
+				</div>
+			</div>
+			<div class="bottom" id="bottom">
+				<div class="bottom_nr" id="bottom_nr">
+					
+				</div>
+			</div>
+		</div>
+	
+	
+
+	</div>
+<!--  	<script>
+                
+        var offsetWid = document.documentElement.clientWidth;
+        var offsetHei = document.documentElement.clientHeight;
+        let obigbox=document.getElementById('bigbox');
+        console.log(offsetWid);
+        console.log(offsetHei);
+        obigbox.style.height = `${offsetHei}px`;
+        obigbox.style.width = `${offsetWid}px`;
+    </script>
+ -->
+
+
+
+</body>
+</html>
